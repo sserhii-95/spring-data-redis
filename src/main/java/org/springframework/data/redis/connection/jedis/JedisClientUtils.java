@@ -15,7 +15,7 @@
  */
 package org.springframework.data.redis.connection.jedis;
 
-import redis.clients.jedis.BinaryJedis;
+import org.springframework.util.ReflectionUtils;
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
@@ -26,15 +26,12 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import org.springframework.util.ReflectionUtils;
 
 /**
  * Utility class to dispatch arbitrary Redis commands using Jedis commands.
@@ -43,20 +40,15 @@ import org.springframework.util.ReflectionUtils;
  * @author Mark Paluch
  * @since 2.1
  */
-@SuppressWarnings({ "unchecked", "ConstantConditions" })
+@SuppressWarnings({"unchecked", "ConstantConditions"})
 class JedisClientUtils {
 
-	private static final Field CLIENT_FIELD;
 	private static final Method GET_RESPONSE;
 	private static final Method PROTOCOL_SEND_COMMAND;
 	private static final Set<String> KNOWN_COMMANDS;
 	private static final Builder<Object> OBJECT_BUILDER;
 
 	static {
-
-		CLIENT_FIELD = ReflectionUtils.findField(BinaryJedis.class, "client", Client.class);
-		ReflectionUtils.makeAccessible(CLIENT_FIELD);
-
 		PROTOCOL_SEND_COMMAND = ReflectionUtils.findMethod(Protocol.class, "sendCommand", RedisOutputStream.class,
 				byte[].class, byte[][].class);
 		ReflectionUtils.makeAccessible(PROTOCOL_SEND_COMMAND);
@@ -172,7 +164,7 @@ class JedisClientUtils {
 	 * {@link redis.clients.jedis.Pipeline} for response synchronization.
 	 *
 	 * @param target a {@link redis.clients.jedis.Transaction} or {@link redis.clients.jedis.Pipeline}, must not be
-	 *          {@literal null}.
+	 * {@literal null}.
 	 * @return the {@link Response} wrapper object.
 	 */
 	static Response<Object> getResponse(Object target) {
@@ -180,6 +172,6 @@ class JedisClientUtils {
 	}
 
 	private static Client retrieveClient(Jedis jedis) {
-		return (Client) ReflectionUtils.getField(CLIENT_FIELD, jedis);
+		return jedis.getClient();
 	}
 }
